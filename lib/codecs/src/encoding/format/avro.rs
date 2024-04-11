@@ -1,10 +1,20 @@
 use crate::encoding::BuildError;
 use bytes::{BufMut, BytesMut};
+use once_cell::sync::Lazy;
+use schema_registry_converter::blocking::avro::AvroEncoder;
+use schema_registry_converter::blocking::schema_registry::SrSettings;
+use schema_registry_converter::schema_registry_common::SubjectNameStrategy;
 use serde::{Deserialize, Serialize};
 use tokio_util::codec::Encoder;
 use vector_config::configurable_component;
 use vector_core::{config::DataType, event::Event, schema};
 
+//Create a Static Avro Serializer
+pub static AVRO_ENCODER: Lazy<AvroEncoder> = Lazy::new(|| {
+    let schema_registry_url =
+        std::env::var("SCHEMA_REGISTRY_URL").expect("SCHEMA_REGISTRY_URL must be set");
+    AvroEncoder::new(SrSettings::new(String::from(schema_registry_url)))
+});
 /// Config used to build a `AvroSerializer`.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct AvroSerializerConfig {
@@ -22,6 +32,8 @@ impl AvroSerializerConfig {
 
     /// Build the `AvroSerializer` from this configuration.
     pub fn build(&self) -> Result<AvroSerializer, BuildError> {
+        // mock the schema registry
+
         let schema = apache_avro::Schema::parse_str(&self.avro.schema)
             .map_err(|error| format!("Failed building Avro serializer: {}", error))?;
         Ok(AvroSerializer { schema })
@@ -69,14 +81,35 @@ impl Encoder<Event> for AvroSerializer {
 
     fn encode(&mut self, event: Event, buffer: &mut BytesMut) -> Result<(), Self::Error> {
         let log = event.into_log();
-        let value = apache_avro::to_value(log)?;
-        let value = value.resolve(&self.schema)?;
-        let bytes = apache_avro::to_avro_datum(&self.schema, value)?;
+        // let value = apache_avro::to_value(log)?;
+        // just to make the Compiler happy
+        let _schema = &self.schema;
+
+        let schema_subject: String = match log.get("schema_subject") {
+            Some(v) => v.to_string().trim_matches('"').to_string(),
+            None => {
+                return Err(Self::Error::from("Schema not found"));
+            }
+        };
+        // println!("schema_subject {:?}", schema_subject);
+        let key_strategy = SubjectNameStrategy::RecordNameStrategy(schema_subject);
+        // println!("key_strategy {:?}", key_strategy);
+        // let schema_registry_url =
+        //     std::env::var("SCHEMA_REGISTRY_URL").expect("SCHEMA_REGISTRY_URL must be set");
+        // let encoder = AvroEncoder::new(SrSettings::new(String::from(schema_registry_url)));
+
+        let bytes = match AVRO_ENCODER.encode_struct(log, &key_strategy) {
+            Ok(v) => v,
+            Err(e) => {
+                return Err(Self::Error::from(e));
+            }
+        };
+        // let value = value.resolve(&self.schema)?;
+        // let bytes = apache_avro::to_avro_datum(&self.schema, value)?;
         buffer.put_slice(&bytes);
         Ok(())
     }
 }
-
 #[cfg(test)]
 mod tests {
     use bytes::BytesMut;
