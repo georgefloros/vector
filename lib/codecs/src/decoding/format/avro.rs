@@ -4,6 +4,10 @@ use bytes::Buf;
 use bytes::Bytes;
 use chrono::Utc;
 use lookup::event_path;
+use once_cell::sync::Lazy;
+use schema_registry_converter::blocking::avro::AvroDecoder;
+use schema_registry_converter::blocking::schema_registry::SrSettings;
+
 use serde::{Deserialize, Serialize};
 use smallvec::{smallvec, SmallVec};
 use vector_config::configurable_component;
@@ -19,6 +23,13 @@ type AvroValue = apache_avro::types::Value;
 
 const CONFLUENT_MAGIC_BYTE: u8 = 0;
 const CONFLUENT_SCHEMA_PREFIX_LEN: usize = 5;
+
+//Create a Static Avro Deserializer
+pub static AVRO_DECODER: Lazy<AvroDecoder> = Lazy::new(|| {
+    let schema_registry_url =
+        std::env::var("SCHEMA_REGISTRY_URL").expect("SCHEMA_REGISTRY_URL must be set");
+    AvroDecoder::new(SrSettings::new(String::from(schema_registry_url)))
+});
 
 /// Config used to build a `AvroDeserializer`.
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -135,21 +146,22 @@ impl Deserializer for AvroDeserializer {
         if bytes.is_empty() {
             return Ok(smallvec![]);
         }
-
-        let bytes = if self.strip_schema_id_prefix {
+        let value = if self.strip_schema_id_prefix {
             if bytes.len() >= CONFLUENT_SCHEMA_PREFIX_LEN && bytes[0] == CONFLUENT_MAGIC_BYTE {
-                bytes.slice(CONFLUENT_SCHEMA_PREFIX_LEN..)
+                let bytes = bytes.slice(CONFLUENT_SCHEMA_PREFIX_LEN..);
+                let value = apache_avro::from_avro_datum(&self.schema, &mut bytes.reader(), None)?;
+                value
             } else {
                 return Err(vector_common::Error::from(
                     "Expected avro datum to be prefixed with schema id",
                 ));
             }
         } else {
-            bytes
+            match AVRO_DECODER.decode(Some(&bytes)) {
+                Ok(value) => value.value,
+                Err(error) => return Err(vector_common::Error::from(error)),
+            }
         };
-
-        let value = apache_avro::from_avro_datum(&self.schema, &mut bytes.reader(), None)?;
-
         let apache_avro::types::Value::Record(fields) = value else {
             return Err(vector_common::Error::from("Expected an avro Record"));
         };
@@ -194,9 +206,10 @@ pub fn try_from(value: AvroValue) -> vector_common::Result<VrlValue> {
         AvroValue::Date(_) => Err(vector_common::Error::from(
             "AvroValue::Date is not supported",
         )),
-        AvroValue::Decimal(_) => Err(vector_common::Error::from(
-            "AvroValue::Decimal is not supported",
-        )),
+        AvroValue::Decimal(decimal) => match <Vec<u8>>::try_from(&decimal) {
+            Ok(value) => Ok(VrlValue::from(String::from_utf8_lossy(&value).to_string())),
+            Err(e) => Err(vector_common::Error::from(e)),
+        },
         AvroValue::Double(double) => Ok(VrlValue::from_f64_or_zero(double)),
         AvroValue::Duration(_) => Err(vector_common::Error::from(
             "AvroValue::Duration is not supported",
@@ -230,6 +243,7 @@ pub fn try_from(value: AvroValue) -> vector_common::Result<VrlValue> {
         AvroValue::Uuid(uuid) => Ok(VrlValue::from(uuid.as_hyphenated().to_string())),
         AvroValue::LocalTimestampMillis(ts_millis) => Ok(VrlValue::from(ts_millis)),
         AvroValue::LocalTimestampMicros(ts_micros) => Ok(VrlValue::from(ts_micros)),
+        _ => Err(vector_common::Error::from("Unsupported AvroValue")),
     }
 }
 

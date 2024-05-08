@@ -481,11 +481,14 @@ impl HttpSource for SimpleHttpSource {
         _query_parameters: &HashMap<String, String>,
         _request_path: &str,
     ) -> Result<Vec<Event>, ErrorMessage> {
+        //Remove \n from the body
+        let mut body_vec = body.to_vec();
+        body_vec.retain(|&b| b != b'\n');
+        let no_new_lines = Bytes::from(body_vec);
         let mut decoder = self.decoder.clone();
         let mut events = Vec::new();
         let mut bytes = BytesMut::new();
-        bytes.extend_from_slice(&body);
-
+        bytes.extend_from_slice(&no_new_lines);
         loop {
             match decoder.decode_eof(&mut bytes) {
                 Ok(Some((next, _))) => {
@@ -1529,8 +1532,6 @@ mod tests {
                 ..Default::default()
             };
 
-            let log_namespace: LogNamespace = config.log_namespace.unwrap_or(false).into();
-
             let listen_addr_http = format!("http://{}/", config.address);
             let uri = Uri::try_from(&listen_addr_http).expect("should not fail to parse URI");
 
@@ -1544,7 +1545,6 @@ mod tests {
 
             ValidationConfiguration::from_source(
                 Self::NAME,
-                log_namespace,
                 vec![ComponentTestCaseConfig::from_source(
                     config,
                     None,

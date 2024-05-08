@@ -14,7 +14,7 @@ CHANNEL="${CHANNEL:-"$(cargo vdev release channel)"}"
 VERSION="${VECTOR_VERSION:-"$(cargo vdev version)"}"
 DATE="${DATE:-"$(date -u +%Y-%m-%d)"}"
 PLATFORM="${PLATFORM:-}"
-PUSH="${PUSH:-"true"}"
+PUSH="${PUSH:-"false"}"
 REPO="${REPO:-"timberio/vector"}"
 
 IFS=, read -ra REQUESTED_PLATFORMS <<< "$PLATFORM"
@@ -51,7 +51,7 @@ build() {
   local BASE="$1"
   local VERSION="$2"
 
-  local TAG="$REPO:$VERSION-$BASE"
+  local TAG="$VERSION-$BASE"
   local DOCKERFILE="distribution/docker/$BASE/Dockerfile"
 
   if [ -n "$PLATFORM" ]; then
@@ -88,18 +88,18 @@ build() {
 echo "Building $REPO:* Docker images"
 
 if [[ "$CHANNEL" == "release" ]]; then
-  VERSION_EXACT="$VERSION"
-  # shellcheck disable=SC2001
-  VERSION_MINOR_X=$(echo "$VERSION" | sed 's/\.[0-9]*$/.X/g')
-  # shellcheck disable=SC2001
-  VERSION_MAJOR_X=$(echo "$VERSION" | sed 's/\.[0-9]*\.[0-9]*$/.X/g')
+  # VERSION_EXACT="$VERSION"
+  # # shellcheck disable=SC2001
+  # VERSION_MINOR_X=$(echo "$VERSION" | sed 's/\.[0-9]*$/.X/g')
+  # # shellcheck disable=SC2001
+  # VERSION_MAJOR_X=$(echo "$VERSION" | sed 's/\.[0-9]*\.[0-9]*$/.X/g')
 
-  for VERSION_TAG in "$VERSION_EXACT" "$VERSION_MINOR_X" "$VERSION_MAJOR_X" latest; do
-    build alpine "$VERSION_TAG"
-    build debian "$VERSION_TAG"
-    build distroless-static "$VERSION_TAG"
-    build distroless-libc "$VERSION_TAG"
-  done
+  # for VERSION_TAG in "$VERSION_EXACT" "$VERSION_MINOR_X" "$VERSION_MAJOR_X" latest; do
+    build alpine "$VERSION"
+    build debian "$VERSION"
+    build distroless-static "$VERSION"
+    build distroless-libc "$VERSION"
+  # done
 elif [[ "$CHANNEL" == "nightly" ]]; then
   for VERSION_TAG in "nightly-$DATE" nightly; do
     build alpine "$VERSION_TAG"
