@@ -10,7 +10,7 @@ name = "generate-avro-fixtures"
 path = "tests/bin/generate-avro-fixtures.rs"
 
 [dependencies]
-apache-avro = { version = "0.16.0", default-features = false }
+apache-avro = { git = "https://github.com/georgefloros/avro-rs", branch = "decimal-v0.18.0", default-features = false }
 bytes = { version = "1", default-features = false }
 chrono.workspace = true
 csv-core = { version = "0.1.12", default-features = false }
@@ -18,15 +18,24 @@ derivative = { version = "2", default-features = false }
 dyn-clone = { version = "1", default-features = false }
 flate2.workspace = true
 influxdb-line-protocol = { version = "2", default-features = false }
-lookup = { package = "vector-lookup", path = "../vector-lookup", default-features = false, features = ["test"] }
+lookup = { package = "vector-lookup", path = "../vector-lookup", default-features = false, features = [
+    "test",
+] }
 memchr = { version = "2", default-features = false }
 ordered-float = { version = "4.6.0", default-features = false }
 prost.workspace = true
 prost-reflect.workspace = true
 rand.workspace = true
-regex = { version = "1.11.1", default-features = false, features = ["std", "perf"] }
+regex = { version = "1.11.1", default-features = false, features = [
+    "std",
+    "perf",
+] }
 serde.workspace = true
-serde_with = { version = "3.12.0", default-features = false, features = ["std", "macros", "chrono_0_4"] }
+serde_with = { version = "3.12.0", default-features = false, features = [
+    "std",
+    "macros",
+    "chrono_0_4",
+] }
 serde_json.workspace = true
 smallvec = { version = "1", default-features = false, features = ["union"] }
 snafu.workspace = true
@@ -38,14 +47,27 @@ vrl.workspace = true
 vector-common = { path = "../vector-common", default-features = false }
 vector-config = { path = "../vector-config", default-features = false }
 vector-config-macros = { path = "../vector-config-macros", default-features = false }
-vector-core = { path = "../vector-core", default-features = false, features = ["vrl"] }
+vector-core = { path = "../vector-core", default-features = false, features = [
+    "vrl",
+] }
+once_cell = { version = "1", default-features = false }
+schema_registry_converter = { git = "https://github.com/georgefloros/schema_registry_converter", branch = "nested-schemas-v4.2.0", default-features = false, features = [
+    "avro",
+    "blocking",
+    "native_tls",
+] }
 
 [dev-dependencies]
 futures.workspace = true
 indoc = { version = "2", default-features = false }
 tokio = { version = "1", features = ["test-util"] }
 similar-asserts = "1.7.0"
-vector-core = { path = "../vector-core", default-features = false, features = ["vrl", "test"] }
+vector-core = { path = "../vector-core", default-features = false, features = [
+    "vrl",
+    "test",
+] }
+
+
 rstest = "0.25.0"
 tracing-test = "0.2.5"
 uuid.workspace = true
