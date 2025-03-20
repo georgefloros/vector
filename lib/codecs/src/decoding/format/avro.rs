@@ -9,6 +9,7 @@ use schema_registry_converter::blocking::avro::AvroDecoder;
 use schema_registry_converter::blocking::schema_registry::SrSettings;
 use serde::{Deserialize, Serialize};
 use smallvec::{smallvec, SmallVec};
+use tokio::task::block_in_place;
 use vector_config::configurable_component;
 use vector_core::{
     config::{log_schema, DataType, LogNamespace},
@@ -141,52 +142,55 @@ impl Deserializer for AvroDeserializer {
         bytes: Bytes,
         log_namespace: LogNamespace,
     ) -> vector_common::Result<SmallVec<[Event; 1]>> {
-        // Avro has a `null` type which indicates no value.
-        if bytes.is_empty() {
-            return Ok(smallvec![]);
-        }
-
-        let value = if self.strip_schema_id_prefix {
-            if bytes.len() >= CONFLUENT_SCHEMA_PREFIX_LEN && bytes[0] == CONFLUENT_MAGIC_BYTE {
-                bytes.slice(CONFLUENT_SCHEMA_PREFIX_LEN..);
-                let value = apache_avro::from_avro_datum(&self.schema, &mut bytes.reader(), None)?;
-                value
-            } else {
-                return Err(vector_common::Error::from(
-                    "Expected avro datum to be prefixed with schema id",
-                ));
+        block_in_place(move || {
+            // Avro has a `null` type which indicates no value.
+            if bytes.is_empty() {
+                return Ok(smallvec![]);
             }
-        } else {
-            match AVRO_DECODER.decode(Some(&bytes)) {
-                Ok(value) => value.value,
-                Err(error) => return Err(vector_common::Error::from(error)),
-            }
-        };
 
-        let apache_avro::types::Value::Record(fields) = value else {
-            return Err(vector_common::Error::from("Expected an avro Record"));
-        };
-
-        let mut log = LogEvent::default();
-        for (k, v) in fields {
-            log.insert(event_path!(k.as_str()), try_from(v)?);
-        }
-
-        let mut event = Event::Log(log);
-        let event = match log_namespace {
-            LogNamespace::Vector => event,
-            LogNamespace::Legacy => {
-                if let Some(timestamp_key) = log_schema().timestamp_key_target_path() {
-                    let log = event.as_mut_log();
-                    if !log.contains(timestamp_key) {
-                        let timestamp = Utc::now();
-                        log.insert(timestamp_key, timestamp);
-                    }
+            let value = if self.strip_schema_id_prefix {
+                if bytes.len() >= CONFLUENT_SCHEMA_PREFIX_LEN && bytes[0] == CONFLUENT_MAGIC_BYTE {
+                    bytes.slice(CONFLUENT_SCHEMA_PREFIX_LEN..);
+                    let value =
+                        apache_avro::from_avro_datum(&self.schema, &mut bytes.reader(), None)?;
+                    value
+                } else {
+                    return Err(vector_common::Error::from(
+                        "Expected avro datum to be prefixed with schema id",
+                    ));
                 }
-                event
+            } else {
+                match AVRO_DECODER.decode(Some(&bytes)) {
+                    Ok(value) => value.value,
+                    Err(error) => return Err(vector_common::Error::from(error)),
+                }
+            };
+
+            let apache_avro::types::Value::Record(fields) = value else {
+                return Err(vector_common::Error::from("Expected an avro Record"));
+            };
+
+            let mut log = LogEvent::default();
+            for (k, v) in fields {
+                log.insert(event_path!(k.as_str()), try_from(v)?);
             }
-        };
-        Ok(smallvec![event])
+
+            let mut event = Event::Log(log);
+            let event = match log_namespace {
+                LogNamespace::Vector => event,
+                LogNamespace::Legacy => {
+                    if let Some(timestamp_key) = log_schema().timestamp_key_target_path() {
+                        let log = event.as_mut_log();
+                        if !log.contains(timestamp_key) {
+                            let timestamp = Utc::now();
+                            log.insert(timestamp_key, timestamp);
+                        }
+                    }
+                    event
+                }
+            };
+            Ok(smallvec![event])
+        })
     }
 }
 
