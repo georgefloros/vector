@@ -1,0 +1,68 @@
+acknowledgements:
+  enabled: true
+sources:
+  internal_metrics_source:
+    type: internal_metrics
+    namespace: "clearing-events-vector"
+  mq_webhook_source:
+    type: http_server
+    address: 0.0.0.0:8500
+    path: /mq/events
+    headers:
+      - "*"
+    decoding:
+      codec: json
+transforms:
+  # create_metrics_logs:
+  #   type: metric_to_log
+  #   inputs:
+  #     - internal_metrics_source
+
+  define_topic_and_schema:
+    type: remap
+    inputs:
+      - mq_webhook_source
+    source: |
+      .topic = "dev.vector-decimal-test.input" 
+      .schema_subject = "eu.qualco.kite.avro.common.dtos.DecimalTest"
+
+  define_headers:
+    type: remap
+    inputs:
+      - define_topic_and_schema
+    source: |
+      request_id = uuid_v4()
+      .kafka_headers."X-Kite-RequestId" = request_id
+      .kafka_headers."X-Kite-Session" = request_id
+      .kafka_headers."X-Kite-ClientReferenceId" = "vector-decimal-test"
+      .kafka_headers.author = "vector-decimal-test"
+      .kafka_headers.msgId = uuid_v4()
+      .kafka_headers.schemaId = "305"
+      .kafka_headers.originator = "/mq/events"
+      .kafka_headers.subject = .schema_subject
+      .kafka_headers.operation = "create decimal test"
+
+sinks:
+  kafka_sink:
+    type: kafka
+    inputs:
+      - define_headers
+    bootstrap_servers: 10.50.113.21:10020
+    topic: "{{ topic }}"
+    buffer:
+      when_full: block
+    compression: gzip
+    headers_key: kafka_headers
+    key_field: .kafka_headers.clientReferenceId
+    encoding:
+      codec: avro
+      avro:
+        schema: '{ "type": "record", "name": "log", "fields": [{ "name": "message", "type": "string" }] }'
+      except_fields:
+        - topic
+        - accept
+        - kafka_headers
+        - source_type
+        - timestamp
+        - handled
+        - ignore

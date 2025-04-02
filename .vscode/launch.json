@@ -8,7 +8,7 @@
             "program": "${workspaceFolder}/target/debug/vector",
             "args": [
                 "-c",
-                "${workspaceFolder}/target/debug/vector.yaml"
+                "${workspaceFolder}/test.config/vector-decimal.yaml"
             ],
             "cwd": "${workspaceFolder}",
             // "preLaunchTask": "cargo build",
