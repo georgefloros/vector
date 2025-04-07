@@ -12,7 +12,7 @@ path = "tests/bin/generate-avro-fixtures.rs"
 [dependencies]
 # apache-avro = { path = "../../../avro-rs/avro", default-features = false }
 
-apache-avro = { git = "https://github.com/georgefloros/avro-rs", rev = "eb4dbad607fc204edd86679efd8990768c928c76", default-features = false, optional = true }
+apache-avro = { git = "https://github.com/georgefloros/avro-rs", rev = "eb4dbad607fc204edd86679efd8990768c928c76", default-features = false }
 bytes = { version = "1", default-features = false }
 chrono.workspace = true
 csv-core = { version = "0.1.12", default-features = false }

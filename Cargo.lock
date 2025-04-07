@@ -271,29 +271,7 @@ checksum = "dcfed56ad506cb2c684a14971b8861fdc3baaaae314b9e5f9bb532cbe3ba7a4f"
 [[package]]
 name = "apache-avro"
 version = "0.18.0"
-dependencies = [
- "bigdecimal",
- "bon",
- "digest",
- "libflate",
- "log",
- "num-bigint",
- "quad-rand",
- "rand 0.9.0",
- "regex-lite",
- "serde",
- "serde_bytes",
- "serde_json",
- "strum 0.27.1",
- "strum_macros 0.27.1",
- "thiserror 2.0.12",
- "uuid",
-]
-
-[[package]]
-name = "apache-avro"
-version = "0.18.0"
-source = "git+https://github.com/georgefloros/avro-rs?branch=decimal-v0.18.0#eb4dbad607fc204edd86679efd8990768c928c76"
+source = "git+https://github.com/georgefloros/avro-rs?rev=eb4dbad607fc204edd86679efd8990768c928c76#eb4dbad607fc204edd86679efd8990768c928c76"
 dependencies = [
  "bigdecimal",
  "bon",
@@ -2362,7 +2340,7 @@ dependencies = [
 name = "codecs"
 version = "0.1.0"
 dependencies = [
- "apache-avro 0.18.0",
+ "apache-avro",
  "bytes 1.10.1",
  "chrono",
  "csv-core",
@@ -8963,8 +8941,9 @@ dependencies = [
 [[package]]
 name = "schema_registry_converter"
 version = "4.2.0"
+source = "git+https://github.com/georgefloros/schema_registry_converter?rev=38b5c6f9fb3287090098bf5d08a4421c15d96b32#38b5c6f9fb3287090098bf5d08a4421c15d96b32"
 dependencies = [
- "apache-avro 0.18.0 (git+https://github.com/georgefloros/avro-rs?branch=decimal-v0.18.0)",
+ "apache-avro",
  "byteorder",
  "dashmap 6.1.0",
  "once_cell",
@@ -11294,7 +11273,7 @@ dependencies = [
 name = "vector"
 version = "0.46.0"
 dependencies = [
- "apache-avro 0.18.0",
+ "apache-avro",
  "approx",
  "arc-swap",
  "arr_macro",
