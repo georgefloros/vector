@@ -20,7 +20,6 @@ use vrl::value::KeyString;
 
 type VrlValue = vrl::value::Value;
 type AvroValue = apache_avro::types::Value;
-
 const CONFLUENT_MAGIC_BYTE: u8 = 0;
 const CONFLUENT_SCHEMA_PREFIX_LEN: usize = 5;
 
