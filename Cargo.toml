@@ -510,7 +510,7 @@ async-compression = { version = "0.4.20", default-features = false, features = [
   "gzip",
   "zstd",
 ], optional = true }
-apache-avro = { git = "https://github.com/georgefloros/avro-rs", branch = "decimal-v0.18.0", rev = "eb4dbad607fc204edd86679efd8990768c928c76", default-features = false, optional = true }
+apache-avro = { git = "https://github.com/georgefloros/avro-rs", rev = "eb4dbad607fc204edd86679efd8990768c928c76", default-features = false, optional = true }
 # apache-avro = { path = "../avro-rs/avro", default-features = false, optional = true }
 
 axum = { version = "0.6.20", default-features = false }
