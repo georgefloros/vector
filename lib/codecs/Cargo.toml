@@ -51,7 +51,7 @@ vector-core = { path = "../vector-core", default-features = false, features = [
     "vrl",
 ] }
 once_cell = { version = "1", default-features = false }
-schema_registry_converter = { git = "https://github.com/georgefloros/schema_registry_converter", branch = "schema-registry-v0.46", default-features = false, features = [
+schema_registry_converter = { git = "https://github.com/georgefloros/schema_registry_converter", branch = "nested-schemas-v4.2.0", default-features = false, features = [
     "avro",
     "blocking",
     "native_tls",
