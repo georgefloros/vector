@@ -11,8 +11,7 @@ path = "tests/bin/generate-avro-fixtures.rs"
 
 [dependencies]
 # apache-avro = { path = "../../../avro-rs/avro", default-features = false }
-
-apache-avro = { git = "https://github.com/georgefloros/avro-rs", rev = "eb4dbad607fc204edd86679efd8990768c928c76", default-features = false }
+apache-avro = { git = "https://github.com/georgefloros/avro-rs", branch = "decimal-v0.20.0", default-features = false }
 bytes = { version = "1", default-features = false }
 chrono.workspace = true
 csv-core = { version = "0.1.12", default-features = false }
@@ -53,7 +52,7 @@ vector-core = { path = "../vector-core", default-features = false, features = [
     "vrl",
 ] }
 once_cell = { version = "1", default-features = false }
-schema_registry_converter = { git = "https://github.com/georgefloros/schema_registry_converter", rev = "38b5c6f9fb3287090098bf5d08a4421c15d96b32", default-features = false, features = [
+schema_registry_converter = { git = "https://github.com/georgefloros/schema_registry_converter", branch = "nested-schemas-v4.4.0", default-features = false, features = [
     "avro",
     "blocking",
     "native_tls",
