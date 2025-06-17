@@ -2,13 +2,51 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(lldb)Debug",
+            "name": "(lldb)Debug Decimals",
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/target/debug/vector",
             "args": [
                 "-c",
                 "${workspaceFolder}/test.config/vector-decimal.yaml"
+            ],
+            "cwd": "${workspaceFolder}",
+            // "preLaunchTask": "cargo build",
+            "stopOnEntry": false,
+            "internalConsoleOptions": "openOnSessionStart",
+            "env": {
+                "SCHEMA_REGISTRY_URL": "http://10.50.113.21:10006",
+                "RUST_LOG": "debug",
+                "RUST_BACKTRACE": "1"
+            }
+        },
+        {
+            "name": "(lldb)Release Decimals",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/target/release/vector",
+            "args": [
+                "-c",
+                "${workspaceFolder}/test.config/vector-decimal.yaml"
+            ],
+            "cwd": "${workspaceFolder}",
+            // "preLaunchTask": "cargo build",
+            "stopOnEntry": false,
+            "internalConsoleOptions": "openOnSessionStart",
+            "env": {
+                "SCHEMA_REGISTRY_URL": "http://10.50.113.21:10006",
+                "RUST_LOG": "debug",
+                "RUST_BACKTRACE": "1"
+            }
+        },
+        {
+            "name": "(lldb)Debug Raw Inputs",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/target/debug/vector",
+            "args": [
+                "-c",
+                "${workspaceFolder}/test.config/vector-raw-inputs.yaml"
             ],
             "cwd": "${workspaceFolder}",
             // "preLaunchTask": "cargo build",

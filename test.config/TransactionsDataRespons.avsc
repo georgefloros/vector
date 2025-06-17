@@ -1,0 +1,103 @@
+{
+    "type": "record",
+    "name": "TransactionsDataResponse",
+    "namespace": "eu.qualco.kite.external.sources.dtos",
+    "fields": [
+        {
+            "name": "data",
+            "type": {
+                "type": "array",
+                "items": {
+                    "type": "record",
+                    "name": "Transaction",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "type": "string"
+                        },
+                        {
+                            "name": "account_id",
+                            "type": "string"
+                        },
+                        {
+                            "name": "duplicated",
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "mode",
+                            "type": "string"
+                        },
+                        {
+                            "name": "status",
+                            "type": "string"
+                        },
+                        {
+                            "name": "made_on",
+                            "type": "string"
+                        },
+                        {
+                            "name": "amount",
+                            "type": "double"
+                        },
+                        {
+                            "name": "currency_code",
+                            "type": "string"
+                        },
+                        {
+                            "name": "description",
+                            "type": "string"
+                        },
+                        {
+                            "name": "category",
+                            "type": "string"
+                        },
+                        {
+                            "name": "extra",
+                            "type": {
+                                "type": "record",
+                                "name": "TransactionExtra",
+                                "fields": [
+                                    {
+                                        "name": "payee",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "name": "payer",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "name": "payee_information",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "name": "payer_information",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "name": "account_balance_snapshot",
+                                        "type": "long"
+                                    },
+                                    {
+                                        "name": "categorization_confidence",
+                                        "type": [
+                                            "null",
+                                            "double"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "name": "created_at",
+                            "type": "string"
+                        },
+                        {
+                            "name": "updated_at",
+                            "type": "string"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

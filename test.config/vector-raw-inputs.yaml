@@ -1,0 +1,118 @@
+acknowledgements:
+  enabled: true
+sources:
+  kafka_source:
+    type: "kafka"
+    bootstrap_servers: 10.50.113.21:10020
+    group_id: "vector-raw-inputs"
+    decoding:
+      codec: json
+    topics:
+      - "dev.customer-transactions-raw-data.input"
+      - "dev.customer-ais-raw-data.input"
+      - "dev.customer-score-raw-data.input"
+  internal_metrics_source:
+    type: internal_metrics
+    namespace: "raw-data-events-vector"
+transforms:
+  # create_metrics_logs:
+  #   type: metric_to_log
+  #   inputs:
+  #     - internal_metrics_source
+
+  define_topic_and_schema:
+    type: remap
+    inputs:
+      - kafka_source
+    source: |
+      # This is a remap transform that sets the topic and schema subject
+      # based on the input topic.
+      # It is used to route the data to the correct Kafka topic and schema.
+        if .topic == "dev.customer-transactions-raw-data.input" {
+            .output_topic = "dev.customer-transactions-data.input"
+            .schema_subject = "eu.qualco.kite.external.sources.dtos.TransactionsDataResponse"  
+          } else if .topic == "dev.customer-ais-raw-data.input" {
+            .output_topic = "dev.customer-ais-data.input"
+            .schema_subject = "eu.qualco.kite.external.sources.dtos.AccountsDataResponse"
+          } else if .topic == "dev.customer-score-raw-data.input" {
+            .output_topic = "dev.customer-score-data.input"
+            .schema_subject = "eu.qualco.kite.external.sources.dtos.RiskAssessmentResponse"
+          } else {
+            # If the topic does not match any of the expected topics, set the output topic to null.
+            .output_topic = "dev.customer-raw-data-unmatched.input"
+            .schema_subject = null
+          }
+
+  route-to:
+    type: route
+    inputs:
+      - define_topic_and_schema
+    route:
+      valid: .schema_subject != null
+
+  # fix_values:
+  #   type: remap
+  #   inputs:
+  #     - route-to.valid
+  #   source: |
+  #     . = map_values(.,true)-> |value| {
+  #        result, err = parse_timestamp(value, format: "%Y-%m-%dT%H:%M:%SZ");
+  #        if is_null(err) {
+  #          to_unix_timestamp(parse_timestamp!(result, format: "%Y-%m-%dT%H:%M:%SZ"), unit: "milliseconds")
+  #          }else{
+  #            value
+  #          }
+  #      }
+  define_headers:
+    type: remap
+    inputs:
+      - route-to.valid
+    source: |
+      request_id = uuid_v4()
+      .kafka_headers."X-Kite-RequestId" = request_id
+      .kafka_headers."X-Kite-Session" = request_id
+      .kafka_headers."X-Kite-ClientReferenceId" = "vector-decimal-test"
+      .kafka_headers.author = "vector-external-test"
+      .kafka_headers.msgId = uuid_v4()
+      .kafka_headers.schemaId = "0"
+      .kafka_headers.originator = "vector-external-test"
+      .kafka_headers.subject = .schema_subject
+      .kafka_headers.operation = "customer-external-data"
+
+sinks:
+  kafka_sink_unmatched:
+    type: kafka
+    inputs:
+      - route-to._unmatched
+    bootstrap_servers: 10.50.113.21:10020
+    topic: "{{ output_topic }}"
+    buffer:
+      when_full: block
+    compression: gzip
+    encoding:
+      codec: json
+
+  kafka_sink_valid:
+    type: kafka
+    inputs:
+      - define_headers
+    bootstrap_servers: 10.50.113.21:10020
+    topic: "{{ output_topic }}"
+    buffer:
+      when_full: block
+    compression: gzip
+    headers_key: kafka_headers
+    key_field: .kafka_headers.msgId
+    encoding:
+      codec: avro
+      avro:
+        schema: '{ "type": "record", "name": "log", "fields": [{ "name": "message", "type": "string" }] }'
+      except_fields:
+        - output_topic
+        - topic
+        - accept
+        - kafka_headers
+        - source_type
+        - timestamp
+        - handled
+        - ignore

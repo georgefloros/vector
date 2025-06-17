@@ -1,0 +1,124 @@
+{
+    "type": "record",
+    "name": "RiskAssessmentResponse",
+    "namespace": "eu.qualco.kite.external.sources.dtos",
+    "fields": [
+        {
+            "name": "account_identifier",
+            "type": "string"
+        },
+        {
+            "name": "category_results",
+            "type": {
+                "type": "array",
+                "items": {
+                    "type": "record",
+                    "name": "CategoryResult",
+                    "fields": [
+                        {
+                            "name": "attribute_results",
+                            "type": {
+                                "type": "array",
+                                "items": {
+                                    "type": "record",
+                                    "name": "AttributeResult",
+                                    "fields": [
+                                        {
+                                            "name": "attribute_name",
+                                            "type": "string"
+                                        },
+                                        {
+                                            "name": "attribute_results",
+                                            "type": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "record",
+                                                    "name": "AttributeResultValue",
+                                                    "fields": [
+                                                        {
+                                                            "name": "value",
+                                                            "type": "string"
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "name": "score",
+                                            "type": "string"
+                                        },
+                                        {
+                                            "name": "type",
+                                            "type": "string"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "category",
+                            "type": "string"
+                        },
+                        {
+                            "name": "level",
+                            "type": "string"
+                        },
+                        {
+                            "name": "score",
+                            "type": "string"
+                        },
+                        {
+                            "name": "weight",
+                            "type": "string"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "created_at",
+            "type": "string"
+        },
+        {
+            "name": "customer_identifier",
+            "type": "string"
+        },
+        {
+            "name": "customer_version",
+            "type": "string"
+        },
+        {
+            "name": "overall_result",
+            "type": {
+                "type": "record",
+                "name": "OverallResult",
+                "fields": [
+                    {
+                        "name": "level",
+                        "type": "string"
+                    },
+                    {
+                        "name": "score",
+                        "type": "string"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "risk_model_identifier",
+            "type": "string"
+        },
+        {
+            "name": "risk_model_version",
+            "type": "string"
+        },
+        {
+            "name": "score_identifier",
+            "type": "string"
+        },
+        {
+            "name": "type",
+            "type": "string"
+        }
+    ]
+}

@@ -1,0 +1,136 @@
+{
+    "type": "record",
+    "name": "AccountsDataResponse",
+    "namespace": "eu.qualco.kite.external.sources.dtos",
+    "fields": [
+        {
+            "name": "data",
+            "type": {
+                "type": "array",
+                "items": {
+                    "type": "record",
+                    "name": "Account",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "type": "string"
+                        },
+                        {
+                            "name": "connection_id",
+                            "type": "string"
+                        },
+                        {
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "name": "nature",
+                            "type": "string"
+                        },
+                        {
+                            "name": "balance",
+                            "type": "double"
+                        },
+                        {
+                            "name": "currency_code",
+                            "type": "string"
+                        },
+                        {
+                            "name": "extra",
+                            "type": {
+                                "type": "record",
+                                "name": "AccountExtra",
+                                "fields": [
+                                    {
+                                        "name": "iban",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "name": "swift",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "name": "status",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "name": "card_type",
+                                        "type": [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "sort_code",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "name": "client_name",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "name": "account_name",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "name": "current_date",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "name": "current_time",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "name": "account_number",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "name": "transactions_count",
+                                        "type": {
+                                            "type": "record",
+                                            "name": "TransactionCount",
+                                            "fields": [
+                                                {
+                                                    "name": "posted",
+                                                    "type": "long"
+                                                },
+                                                {
+                                                    "name": "pending",
+                                                    "type": "long"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "last_posted_transaction_id",
+                                        "type": "string"
+                                    },
+                                    {
+                                        "name": "cards",
+                                        "type": [
+                                            "null",
+                                            {
+                                                "type": "array",
+                                                "items": "string"
+                                            }
+                                        ],
+                                        "default": null
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "name": "created_at",
+                            "type": "string"
+                        },
+                        {
+                            "name": "updated_at",
+                            "type": "string"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

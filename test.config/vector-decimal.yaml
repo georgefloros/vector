@@ -24,8 +24,30 @@ transforms:
       - mq_webhook_source
     source: |
       .topic = "dev.vector-decimal-test.input" 
-      .schema_subject = "eu.qualco.kite.avro.common.dtos.DecimalTest"
-
+      . = map_values(.,true)-> |value| {
+         result, err = parse_timestamp(value, format: "%Y-%m-%dT%H:%M:%SZ");
+         if is_null(err) {
+           to_unix_timestamp(parse_timestamp!(result, format: "%Y-%m-%dT%H:%M:%SZ"), unit: "milliseconds")
+           }else{
+             value
+           }
+       }
+      # .schema_subject = "eu.qualco.kite.avro.common.dtos.DecimalTest"
+      .gpa_order = .gpa_order || .gpa_order_unload
+      .schema_subject = "eu.qualco.kite.avro.wallet.events.MarqetaTransactionsEvent"
+      .rawData = ""
+      .jitFundingMethod  = .gpa_order.jit_funding.method
+      .userToken = .user_token
+      .actingUserToken = .acting_user_token
+      .cardToken = .card_token
+      .precedingRelatedTransactionToken = .preceding_related_transaction_token
+      .createdTime = .created_time
+      .userTransactionTime = .user_transaction_time
+      .settlementDate = .settlement_date
+      .additionalData = {"environment": "develop"}
+      .amount = .gpa_order.jit_funding.amount || .amount
+      .currencyCode = .gpa_order.currency_code || .currency_code
+      .cardAcceptor = .card_acceptor
   define_headers:
     type: remap
     inputs:
@@ -47,7 +69,7 @@ sinks:
     type: kafka
     inputs:
       - define_headers
-    bootstrap_servers: 10.50.113.21:10020
+    bootstrap_servers: 10.50.113.21:10040
     topic: "{{ topic }}"
     buffer:
       when_full: block
